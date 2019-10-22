@@ -1,0 +1,57 @@
+题目一：
+通过静态分析代码来理解make 生成执行文件的过程
+1、操作系统的镜像文件是如何一步步生成的：
+
+1、创建GCCPREXF  
+2、创建	QEMU
+3、清除错误的规则
+4、 如果有错误 删除所有的文件
+5、生成 kernel
+6、生成bootblock
+7、生成 ucore.img
+
+生成ucore.img需要生成kernel和bootblock,sign而生成bootblock需要生成bootmain.o和bootasm.o及sign 这三个文件分别由bootmain.c和bootasm.c及sign.c完成  
+
+
+题目二：
+熟悉使用qemu和gdb进行的调试工作
+1、从CPU加电后执行的第一条指令开始，单步追踪BIOS的执行。
+2、在初始化位置0x7c00 设置实地址断点，测试断点正常。
+3、从0x7c00开始追踪代码运行，将单步跟踪反汇编得到的代码与bootasm.s和bootblock.as相比较。
+
+1、
+
+
+
+改写Makefile文件
+
+lab1-mon:$(UCOREIMG)
+$(V)$(TERMINAL)-e”$(QEMU)-S-s-d in_asm-D $(BINDIR)/q.log-monitor stdio-hda $<-serial null”
+
+$(V)$(TERMINAL) -e”gdb-q-x 
+Tools/lab1init
+
+在调qumu是增加-d in _asm-D q.log 参数，便可以将运行的汇编指令保存在q.log中。
+
+
+2、在上文添加
+
+set architecture i8086
+B* 0x7c00   //在0x7c00处设置断点。
+Continue
+x/2i $pc     //显示当前eip处的汇编命令
+
+
+3、
+将gdb的结果与bootblock.asm比较，直到0x7ccf,除一些表达上的差异，仍没有发现明显区别。
+
+
+题目三
+分析bootloader进入保护模式的过程。BIOS将通过读取硬盘主引导扇区到内存，并跳转到对应的内存中的位置执行bootloader。请分析bootloader是如何完成从实模式进入保护模式的
+
+1、Bootbloader屏蔽所有中断
+2、将段寄存器清零
+3、打开A20地址线
+4、加载GDT的基地址
+5、切换到保护模式
+6、跳转到32位代码，在32位代码中，BootLoader重新设置保护模式下的段寄存器，然后设置栈顶指针，之后跳转到c代码。
