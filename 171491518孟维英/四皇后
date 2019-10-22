@@ -1,0 +1,6 @@
+四皇后问题
+
+完整性（integrality）：是  如果b是确定的
+最优性(optimality)：是  仅当路径代价是节点深度的非递减函数 
+时间复杂度（time complexity）：1+b+b²+…bd =O（bd）
+空间复杂度（space complexity）：O（bd），将所有节点保存在内存中
